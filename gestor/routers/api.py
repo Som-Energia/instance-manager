@@ -21,7 +21,7 @@ def get_db():
 
 
 @router.post("/instances/", response_model=Instance)
-def create_user(instance: InstanceCreate, db: Session = Depends(get_db)):
+def create_instance(instance: InstanceCreate, db: Session = Depends(get_db)):
     db_instance = instances.search_instance(
         db,
         repository=instance.repository,
@@ -33,13 +33,13 @@ def create_user(instance: InstanceCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/instances/", response_model=list[Instance])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_instances(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = instances.get_instances(db, skip=skip, limit=limit)
     return users
 
 
 @router.get("/instances/{instance_id}", response_model=Instance)
-def read_user(instance_id: int, db: Session = Depends(get_db)):
+def read_instance(instance_id: int, db: Session = Depends(get_db)):
     db_instance = instances.get_instance(db, instance_id=instance_id)
     if db_instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
