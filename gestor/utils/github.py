@@ -1,7 +1,9 @@
+from typing import Any
+
 import aiohttp
 
 
-async def _github_request(path: str) -> str:
+async def _github_request(path: str) -> Any:
     url = f"https://api.github.com{path}"
 
     async with aiohttp.ClientSession() as session:
