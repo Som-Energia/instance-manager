@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class InstanceBase(BaseModel):
+    commit: str
     repository: str
     pull_request: int
 
@@ -12,7 +13,6 @@ class InstanceCreate(InstanceBase):
 
 class Instance(InstanceBase):
     id: int
-    is_active: bool
 
     class Config:
         orm_mode = True

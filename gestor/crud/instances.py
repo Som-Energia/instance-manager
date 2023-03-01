@@ -6,6 +6,7 @@ from gestor.schemas.instances import InstanceCreate
 
 def create_instance(db: Session, instance: InstanceCreate):
     db_instance = Instance(
+        commit=instance.commit,
         repository=instance.repository,
         pull_request=instance.pull_request,
     )
