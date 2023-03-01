@@ -16,8 +16,8 @@ def create_instance(db: Session, instance: InstanceCreate):
     return db_instance
 
 
-def get_instances(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Instance).offset(skip).limit(limit).all()
+def get_instances(db: Session):
+    return db.query(Instance).all()
 
 
 def get_instance(db: Session, instance_id: int):
