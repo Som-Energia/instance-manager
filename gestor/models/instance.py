@@ -11,11 +11,12 @@ class InstanceModel(Base):
     id: Mapped[int] = mapped_column(
         "id", autoincrement=True, nullable=False, unique=True, primary_key=True
     )
+    name: Mapped[str] = mapped_column("name", nullable=False)
     git_info: Mapped["GitInfoModel"] = relationship(back_populates="instance")
 
 
 def create_instance(db: Session, instance: InstanceCreate):
-    new_instance = InstanceModel()
+    new_instance = InstanceModel(name=instance.name)
     db.add(new_instance)
     db.commit()
     db.refresh(new_instance)
