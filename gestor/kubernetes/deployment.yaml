@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erpserver-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: erpserver
+  template:
+    metadata:
+      labels:
+        app: erpserver
+      annotations:
+        kubectl.kubernetes.io/default-container: erpserver
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: erpserver
+          image: erpserver
+          imagePullPolicy: Never # TODO: Get image from registry
+          ports:
+            - name: erpserver
+              containerPort: 8069
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 100Mi
+          envFrom:
+            - configMapRef:
+                name: environmentvars
+          stdin: true
+          tty: true
+        - name: timescale
+          image: timescale/timescaledb-postgis:latest-pg10
+          env:
+            - name: POSTGRES_USER
+              value: erp
+            - name: POSTGRES_PASSWORD
+              value: erp
+            - name: POSTGRES_DB
+              value: destral_db
+        - name: mongo
+          image: mongo:3.0
+        - name: redis
+          image: redis:5.0

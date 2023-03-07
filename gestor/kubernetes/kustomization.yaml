@@ -1,0 +1,35 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+# Set prefix to all resource names
+# Also to the ones in Ingress rules
+namePrefix: name
+
+# Add labels to resources
+# Also adds them to service selectors
+commonLabels:
+  test: test # TODO: Should be set dynamically
+
+# Generate a ConfigMap with scripts and environment variables
+configMapGenerator:
+  - name: environmentvars
+    literals:
+      # Used by destral, should be dynamic
+      - CI_PULL_REQUEST=1
+      - CI_REPO=Som-Energia/openerp_som_addons
+      - GITHUB_TOKEN=secret # Just for private repositories
+      # Used to checkout code
+      - COMMIT=commit
+      - BRANCH=branch
+
+patches:
+  - target:
+      kind: Ingress
+      name: erpserver
+    # TODO: Value should be set dynamically
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: domain
