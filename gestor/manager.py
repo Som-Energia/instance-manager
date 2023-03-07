@@ -1,5 +1,5 @@
-from gestor.utils.github import get_commit_from_pull_request
 from gestor.schemas.instances import InstanceCreate
+from gestor.utils.github import get_info_from_pull_request
 
 
 class Manager:

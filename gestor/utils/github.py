@@ -2,6 +2,8 @@ from typing import Any
 
 import aiohttp
 
+from gestor.schemas.git import GitInfo
+
 
 async def _github_request(path: str) -> Any:
     url = f"https://api.github.com{path}"
@@ -13,7 +15,12 @@ async def _github_request(path: str) -> Any:
             return await response.json()
 
 
-async def get_commit_from_pull_request(repository: str, pull_request: int):
+async def get_info_from_pull_request(repository: str, pull_request: int):
     path = f"/repos/{repository}/pulls/{pull_request}"
     pull_request_info = await _github_request(path)
-    return pull_request_info["head"]["sha"]
+    return GitInfo(
+        repository=repository,
+        pull_request=pull_request,
+        commit=pull_request_info["head"]["sha"],
+        branch=pull_request_info["head"]["ref"],
+    )
