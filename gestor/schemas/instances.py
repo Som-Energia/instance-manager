@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
+from gestor.schemas.git import GitInfo
+
 
 class InstanceBase(BaseModel):
-    commit: str
-    repository: str
-    pull_request: int
+    git_info: GitInfo
 
 
 class InstanceCreate(InstanceBase):
