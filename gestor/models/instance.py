@@ -2,6 +2,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from gestor.models.git import GitInfoModel, create_git_info
 from gestor.schemas.instance import InstanceCreate
+from gestor.schemas.git import GitInfo, GitInfoFilter
 from gestor.utils.database import Base
 
 
@@ -30,3 +31,20 @@ def get_instances(db: Session):
 
 def get_instance(db: Session, instance_name: str):
     return db.query(InstanceModel).filter(InstanceModel.name == instance_name).first()
+
+
+def get_instance_by_git_info(db: Session, git_info: GitInfoFilter):
+    instance_git_info = (
+        db.query(GitInfoModel)
+        .filter(
+            GitInfoModel.repository == git_info.repository,
+            GitInfoModel.pull_request == git_info.pull_request,
+            GitInfoModel.branch == git_info.branch,
+        )
+        .first()
+    )
+
+    if instance_git_info:
+        return instance_git_info.instance
+    else:
+        return None

@@ -1,7 +1,13 @@
 from pydantic import BaseModel
 
 
-class GitInfo(BaseModel):
+class GitInfoFilter(BaseModel):
+    repository: str
+    pull_request: int
+    branch: str
+
+
+class GitInfo(GitInfoFilter):
     commit: str
     repository: str
     pull_request: int
