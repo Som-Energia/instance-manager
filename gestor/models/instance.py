@@ -28,5 +28,5 @@ def get_instances(db: Session):
     return db.query(InstanceModel).all()
 
 
-def get_instance(db: Session, instance_id: int):
-    return db.query(InstanceModel).filter(InstanceModel.id == instance_id).first()
+def get_instance(db: Session, instance_name: str):
+    return db.query(InstanceModel).filter(InstanceModel.name == instance_name).first()

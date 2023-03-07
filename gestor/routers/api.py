@@ -39,9 +39,9 @@ def read_instances(db: Session = Depends(get_db)):
     return instances
 
 
-@router.get("/instances/{instance_id}", response_model=Instance)
-def read_instance(instance_id: int, db: Session = Depends(get_db)):
-    instance = instance_model.get_instance(db, instance_id=instance_id)
+@router.get("/instances/{instance_name}", response_model=Instance)
+def read_instance(instance_name: str, db: Session = Depends(get_db)):
+    instance = instance_model.get_instance(db, instance_name=instance_name)
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     return instance
