@@ -1,4 +1,4 @@
-from gestor.schemas.instances import InstanceCreate
+from gestor.schemas.instance import InstanceCreate
 from gestor.utils.github import get_info_from_pull_request
 
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from gestor.routers import webhooks, api
+from gestor.routers import api, webhooks
 
 app = FastAPI(title="Gestor", description="Gestor")
 

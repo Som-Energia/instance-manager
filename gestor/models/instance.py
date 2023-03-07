@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from gestor.models.git import GitInfoModel, create_git_info
-from gestor.schemas.instances import InstanceCreate
+from gestor.schemas.instance import InstanceCreate
 from gestor.utils.database import Base
 
 
@@ -15,12 +15,12 @@ class InstanceModel(Base):
 
 
 def create_instance(db: Session, instance: InstanceCreate):
-    db_instance = InstanceModel()
-    db.add(db_instance)
+    new_instance = InstanceModel()
+    db.add(new_instance)
     db.commit()
-    db.refresh(db_instance)
-    create_git_info(db, instance.git_info, db_instance.id)
-    return db_instance
+    db.refresh(new_instance)
+    create_git_info(db, instance.git_info, new_instance.id)
+    return new_instance
 
 
 def get_instances(db: Session):
