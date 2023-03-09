@@ -30,7 +30,10 @@ async def get_pull_request_info(repository: str, pull_request: int):
         pull_request,
     )
     path = f"/repos/{repository}/pulls/{pull_request}"
-    pull_request_info = await _github_request(path)
+    try:
+        pull_request_info = await _github_request(path)
+    except InvalidGitHubUrl as e:
+        raise e
     return GitInfo(
         repository=repository,
         pull_request=pull_request,
