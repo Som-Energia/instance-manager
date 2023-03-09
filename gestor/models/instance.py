@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from gestor.models.git import GitInfoModel
-from gestor.schemas.git import GitInfo
-from gestor.schemas.instance import InstanceCreate
+from gestor.schemas.instance import Instance
 from gestor.utils.database import Base
 
 
@@ -16,7 +15,7 @@ class InstanceModel(Base):
     git_info: Mapped["GitInfoModel"] = relationship(back_populates="instance")
 
     @classmethod
-    def create_instance(cls, db: Session, instance: InstanceCreate):
+    def create_instance(cls, db: Session, instance: Instance):
         new_instance = cls(name=instance.name)
         db.add(new_instance)
         db.commit()
