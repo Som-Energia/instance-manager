@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from gestor.manager import manager
-from gestor.models.git import GitInfoModel
 from gestor.models.instance import InstanceModel
-from gestor.schemas.git import GitInfo, GitInfoFilter
-from gestor.schemas.instance import Instance, InstanceCreate
+from gestor.schemas.instance import Instance
 from gestor.utils.database import Base, SessionLocal, engine
 
 Base.metadata.create_all(bind=engine)
@@ -22,13 +20,16 @@ def get_db():
 
 
 @router.post("/instances/deploy/pr")
-async def instance_from_pull_request(repository: str, pull_request: int) -> None:
+async def instance_from_pull_request(
+    repository: str, pull_request: int, background_tasks: BackgroundTasks
+) -> dict[str, str]:
     """Deploys a new instance from a pull request"""
-    await manager.deploy_pull_request(repository, pull_request)
+    background_tasks.add_task(manager.start_pr_instance, repository, pull_request)
+    return {"message": "Added new instance from pull request task"}
 
 
 @router.post("/instances/", response_model=Instance)
-def add_instance(instance: InstanceCreate, db: Session = Depends(get_db)):
+def add_instance(instance: Instance, db: Session = Depends(get_db)):
     new_instance = InstanceModel.create_instance(db=db, instance=instance)
     return new_instance
 
