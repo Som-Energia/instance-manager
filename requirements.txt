@@ -1,6 +1,7 @@
-fastapi==0.93.0
-pydantic==1.10.6
-SQLAlchemy==2.0.5.post1
-aiohttp==3.8.4
+fastapi~=0.93.0
+pydantic~=1.10.6
+SQLAlchemy~=2.0.5.post1
+aiohttp~=3.8.4
 Mako~=1.2.4
 shortuuid~=1.0.11
+pytest==7.2.2
