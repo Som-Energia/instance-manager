@@ -1,7 +1,10 @@
+import logging
+
 from fastapi import FastAPI
 
 from gestor.routers import api, webhooks
 
+logging.basicConfig(level=logging.DEBUG)
 app = FastAPI(title="Gestor", description="Gestor")
 
 app.include_router(api.router, prefix="/api")
