@@ -19,6 +19,11 @@ def get_db():
         db.close()
 
 
+@router.get("/")
+async def root():
+    return {"message": "Hello API!"}
+
+
 @router.post("/instances/deploy/pr")
 async def instance_from_pull_request(
     repository: str, pull_request: int, background_tasks: BackgroundTasks
