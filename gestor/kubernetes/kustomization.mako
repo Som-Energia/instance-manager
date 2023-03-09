@@ -5,24 +5,24 @@ resources:
 
 # Set prefix to all resource names
 # Also to the ones in Ingress rules
-namePrefix: name
+namePrefix: ${name}-
 
 # Add labels to resources
 # Also adds them to service selectors
 commonLabels:
-  test: test # TODO: Should be set dynamically
+% for key, value in labels.items():
+  ${key}: ${value}
+% endfor
 
 # Generate a ConfigMap with scripts and environment variables
 configMapGenerator:
   - name: environmentvars
     literals:
-      # Used by destral, should be dynamic
-      - CI_PULL_REQUEST=1
-      - CI_REPO=Som-Energia/openerp_som_addons
-      - GITHUB_TOKEN=secret # Just for private repositories
-      # Used to checkout code
-      - COMMIT=commit
-      - BRANCH=branch
+      - CI_PULL_REQUEST=${pull_request}
+      - CI_REPO=${repository}
+      - COMMIT=${commit}
+      - BRANCH=${branch}
+      - GITHUB_TOKEN=secret
 
 patches:
   - target:
@@ -32,4 +32,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: domain
+        value: ${name}.${domain}
