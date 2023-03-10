@@ -10,8 +10,15 @@ namePrefix: ${name}-
 # Add labels to resources
 # Also adds them to service selectors
 commonLabels:
+  gestor/name: "${name}"
+
+commonAnnotations:
+  gestor/commit: "${commit}"
+  gestor/branch: "${branch}"
+  gestor/repository: "${repository}"
+  gestor/pull_request: "${pull_request}"
 % for key, value in labels.items():
-  ${key}: ${value}
+  gestor/${key}: "${value}"
 % endfor
 
 # Generate a ConfigMap with scripts and environment variables
