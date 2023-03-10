@@ -29,7 +29,9 @@ async def instance_from_pull_request(
     repository: str, pull_request: int, background_tasks: BackgroundTasks
 ) -> dict[str, str]:
     """Deploys a new instance from a pull request"""
-    background_tasks.add_task(manager.start_pr_instance, repository, pull_request)
+    background_tasks.add_task(
+        manager.start_instance_from_pull_request, repository, pull_request
+    )
     return {"message": "Added new instance from pull request task"}
 
 
