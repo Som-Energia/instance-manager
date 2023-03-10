@@ -9,7 +9,7 @@ from gestor.schemas.git import GitInfo
 
 
 def instance_name():
-    return "g" + shortuuid.uuid()[:-1].lower()
+    return "g" + shortuuid.uuid()[0:10].lower()
 
 
 class InstanceBase(BaseModel):
