@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 def instance_name():
-    return "g" + shortuuid.uuid()[0:10].lower()
+    return "g" + shortuuid.uuid()[0:11].lower()
 
 
 class Instance(BaseModel):
