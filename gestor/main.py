@@ -1,5 +1,6 @@
 import logging
 
+import uvicorn
 from fastapi import FastAPI
 
 from gestor.routers import api, webhooks
@@ -14,3 +15,7 @@ app.include_router(webhooks.router, prefix="/webhooks")
 @app.get("/")
 async def root():
     return {"msg": "Hello World"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
