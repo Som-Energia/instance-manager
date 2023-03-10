@@ -1,3 +1,4 @@
+import re
 from unittest.mock import MagicMock
 
 import pytest
@@ -22,6 +23,10 @@ test_instance = Instance(
 def test_computed_connection_parameters():
     expected_connection = test_instance.name + "." + settings.DEPLOY_DOMAIN
     assert expected_connection == test_instance.connection
+
+
+def test_default_factory_name():
+    assert re.search("^g[a-z0-9]{11}$", test_instance.name)
 
 
 @pytest.mark.asyncio
