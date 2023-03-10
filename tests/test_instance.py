@@ -1,6 +1,11 @@
+from unittest.mock import MagicMock
+
+import pytest
+
 from config import settings
 from gestor.schemas.git import GitInfo
 from gestor.schemas.instance import Instance
+from gestor.utils import kubernetes
 
 test_git_info = GitInfo(
     commit="testtest",
@@ -17,3 +22,15 @@ test_instance = Instance(
 def test_computed_connection_parameters():
     expected_connection = test_instance.name + "." + settings.DEPLOY_DOMAIN
     assert expected_connection == test_instance.connection
+
+
+@pytest.mark.asyncio
+async def test_start_instance_kubernetes_exception(mocker):
+    mocker.patch(
+        "gestor.utils.kubernetes.new_deployment",
+        side_effect=kubernetes.TemplateRenderFailed("Exception"),
+    )
+    magic_method = MagicMock()
+    mocker.patch("gestor.schemas.instance._logger.error", magic_method)
+    await test_instance.deploy()
+    magic_method.assert_called_once()
