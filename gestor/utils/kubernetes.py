@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 
+from kubernetes import client, config
+from kubernetes.client import V1Deployment
 from mako.template import Template
 
 from config import settings
@@ -16,6 +18,11 @@ class TemporaryDirectoryNotFound(Exception):
 
 class TemplateRenderFailed(Exception):
     pass
+
+
+def get_api_client():
+    config.load_kube_config()
+    return client.AppsV1Api()
 
 
 async def _kubectl(args: list[str]) -> int:
@@ -72,3 +79,8 @@ async def new_deployment(name: str, data: dict = {}) -> None:
     tmp_dir_path = await _create_working_directory(name)
     await _render_kubernetes_file(tmp_dir_path, data)
     await _kubectl(["apply", "-k", tmp_dir_path])
+
+
+async def cluster_deployments() -> list[V1Deployment]:
+    """Starts a new deployment in the Kubernetes cluster"""
+    return get_api_client().list_namespaced_deployment(namespace="default").items
