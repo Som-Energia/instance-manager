@@ -12,7 +12,9 @@ class InstanceModel(Base):
         "id", autoincrement=True, nullable=False, unique=True, primary_key=True
     )
     name: Mapped[str] = mapped_column("name", nullable=False)
-    git_info: Mapped["GitInfoModel"] = relationship(back_populates="instance")
+    git_info: Mapped["GitInfoModel"] = relationship(
+        back_populates="instance", cascade="all, delete-orphan"
+    )
 
     @classmethod
     def create_instance(cls, db: Session, instance: Instance):
