@@ -49,3 +49,7 @@ class GitInfoModel(Base):
             return instance_git_info.instance
         else:
             return None
+
+    @classmethod
+    def get_git_infos(cls, db: Session):
+        return db.query(cls).all()
