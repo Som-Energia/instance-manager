@@ -29,6 +29,13 @@ class InstanceModel(Base):
         return new_instance
 
     @classmethod
+    def delete_instance(cls, db: Session, instance: Instance) -> None:
+        db_instance = cls.get_instance(db, instance.name)
+        if db_instance:
+            db.delete(db_instance)
+            db.commit()
+
+    @classmethod
     def get_instances(cls, db: Session):
         return db.query(cls).all()
 
