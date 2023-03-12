@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, AsyncMock
 
 import pytest
 from kubernetes.client.models import (
@@ -55,29 +55,31 @@ async def test_create_instance_from_pull_request(mocker):
     Base.metadata.create_all(bind=engine)
 
     mocker.patch(
-        "gestor.schemas.instance.Instance.deploy",
-        return_value=None,
+        "gestor.utils.github.get_pull_request_info",
+        return_value=test_git_info,
     )
+
+    magic_method = AsyncMock()
+    mocker.patch("gestor.schemas.instance.Instance.deploy", magic_method)
+    await manager.manager.start_instance_from_pull_request("Som-Energia/test", 1)
+    magic_method.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_instance_from_pull_request_existing(mocker):
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
     mocker.patch(
         "gestor.utils.github.get_pull_request_info",
         return_value=test_git_info,
     )
 
-    # New instance
+    InstanceModel.create_instance(db, Instance(git_info=test_git_info))
+    magic_method = AsyncMock()
+    mocker.patch("gestor.schemas.instance.Instance.deploy", magic_method)
     await manager.manager.start_instance_from_pull_request("Som-Energia/test", 1)
-    assert len(InstanceModel.get_instances(db)) == 1
-
-    # Existing instance
-    await manager.manager.start_instance_from_pull_request("Som-Energia/test", 1)
-    assert len(InstanceModel.get_instances(db)) == 1
-
-    # Different new instance
-    mocker.patch(
-        "gestor.utils.github.get_pull_request_info",
-        return_value=test_git_info_2,
-    )
-    await manager.manager.start_instance_from_pull_request("Som-Energia/test", 2)
-    assert len(InstanceModel.get_instances(db)) == 2
+    magic_method.assert_not_called()
 
 
 @pytest.mark.asyncio
