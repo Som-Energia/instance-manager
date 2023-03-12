@@ -1,10 +1,11 @@
+import asyncio
 import logging
 import os
 import shutil
 import subprocess
 
-from kubernetes import client, config
 from kubernetes.client import V1Deployment
+from kubernetes_asyncio import client, config, watch
 from mako.template import Template
 
 from config import settings
@@ -20,8 +21,8 @@ class TemplateRenderFailed(Exception):
     pass
 
 
-def get_api_client():
-    config.load_kube_config()
+async def get_api_client():
+    await config.load_kube_config()
     return client.AppsV1Api()
 
 
@@ -83,4 +84,21 @@ async def new_deployment(name: str, data: dict = {}) -> None:
 
 async def cluster_deployments() -> list[V1Deployment]:
     """Starts a new deployment in the Kubernetes cluster"""
-    return get_api_client().list_namespaced_deployment(namespace="default").items
+    api_client = await get_api_client()
+    deployments = await api_client.list_namespaced_deployment(namespace="default")
+    await client.ApiClient.close()
+    return deployments.items
+
+
+async def watch_deployments(event_queue):
+    api_client = await get_api_client()
+    deployment_watcher = watch.Watch()
+    async with deployment_watcher.stream(
+        api_client.list_namespaced_deployment, namespace="default"
+    ) as s:
+        while True:
+            try:
+                event = await asyncio.wait_for(s.__anext__(), timeout=None)
+                await event_queue.put(event)
+            except asyncio.TimeoutError:
+                pass
