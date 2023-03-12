@@ -18,6 +18,9 @@ class InstanceModel(Base):
 
     @classmethod
     def create_instance(cls, db: Session, instance: Instance):
+        if cls.get_instance(db, instance.name):
+            return
+
         new_instance = cls(name=instance.name)
         db.add(new_instance)
         db.commit()
