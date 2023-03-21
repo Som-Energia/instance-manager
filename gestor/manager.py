@@ -47,7 +47,8 @@ class Manager:
             InstanceModel.create_instance(self._db, instance)
             InstanceModel.create_instance(self._db, instance)
 
-    async def watch_kubernetes_events(self, event_queue):
+    @staticmethod
+    async def watch_kubernetes_events(event_queue):
         await kubernetes.watch_deployments(event_queue)
 
     async def process_kubernetes_events(self, event_queue):
