@@ -1,6 +1,5 @@
 import logging
 
-import uvicorn
 from fastapi import FastAPI
 
 from gestor import manager
@@ -21,7 +20,3 @@ async def root():
 @app.on_event("startup")
 async def startup_event():
     await manager.manager.start()
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
