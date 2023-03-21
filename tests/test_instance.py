@@ -32,7 +32,7 @@ def test_default_factory_name():
 @pytest.mark.asyncio
 async def test_start_instance_kubernetes_exception(mocker):
     mocker.patch(
-        "gestor.utils.kubernetes.new_deployment",
+        "gestor.utils.kubernetes.start_deployment",
         side_effect=kubernetes.TemplateRenderFailed("Exception"),
     )
     magic_method = MagicMock()

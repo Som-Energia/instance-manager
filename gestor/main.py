@@ -20,3 +20,8 @@ async def root():
 @app.on_event("startup")
 async def startup_event():
     await manager.manager.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    await manager.manager.stop()

@@ -5,7 +5,8 @@ import shutil
 import subprocess
 
 from kubernetes.client import V1Deployment
-from kubernetes_asyncio import client, config, watch
+from kubernetes_asyncio import config, watch, client
+from kubernetes_asyncio.client.api_client import ApiClient
 from mako.template import Template
 
 from config import settings
@@ -19,11 +20,6 @@ class TemporaryDirectoryNotFound(Exception):
 
 class TemplateRenderFailed(Exception):
     pass
-
-
-async def get_api_client():
-    await config.load_kube_config()
-    return client.AppsV1Api()
 
 
 async def _kubectl(args: list[str]) -> int:
@@ -76,6 +72,8 @@ async def _render_kubernetes_file(directory_path: str, data=None) -> str:
 
 async def start_deployment(name: str, data: dict = None) -> None:
     """Starts a new deployment in the Kubernetes cluster"""
+    if data is None:
+        data = {}
     _logger.info("Deploying %s", name)
     tmp_dir_path = await _create_working_directory(name)
     await _render_kubernetes_file(tmp_dir_path, data)
@@ -84,21 +82,24 @@ async def start_deployment(name: str, data: dict = None) -> None:
 
 async def cluster_deployments() -> list[V1Deployment]:
     """Starts a new deployment in the Kubernetes cluster"""
-    api_client = await get_api_client()
-    deployments = await api_client.list_namespaced_deployment(namespace="default")
-    await client.ApiClient.close()
-    return deployments.items
+    await config.load_kube_config()
+    async with ApiClient() as api:
+        v1 = client.AppsV1Api(api)
+        deployments = await v1.list_namespaced_deployment(namespace="default")
+        return deployments.items
 
 
 async def watch_deployments(event_queue):
-    api_client = await get_api_client()
-    deployment_watcher = watch.Watch()
-    async with deployment_watcher.stream(
-        api_client.list_namespaced_deployment, namespace="default"
-    ) as s:
-        while True:
-            try:
-                event = await asyncio.wait_for(s.__anext__(), timeout=None)
-                await event_queue.put(event)
-            except asyncio.TimeoutError:
-                pass
+    await config.load_kube_config()
+    async with ApiClient() as api:
+        v1 = client.AppsV1Api(api)
+        deployment_watcher = watch.Watch()
+        async with deployment_watcher.stream(
+            v1.list_namespaced_deployment, namespace="default"
+        ) as s:
+            while True:
+                try:
+                    event = await asyncio.wait_for(s.__anext__(), timeout=None)
+                    await event_queue.put(event)
+                except asyncio.TimeoutError:
+                    pass

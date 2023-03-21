@@ -1,5 +1,5 @@
 import logging
-from asyncio import create_task, Queue
+from asyncio import create_task, Queue, gather
 
 from kubernetes.client import V1Deployment
 
@@ -71,6 +71,12 @@ class Manager:
         self._tasks.append(create_task(self.init_db_from_cluster()))
         self._tasks.append(create_task(self.watch_kubernetes_events(event_queue)))
         self._tasks.append(create_task(self.process_kubernetes_events(event_queue)))
+
+    async def stop(self) -> None:
+        for task in self._tasks:
+            task.cancel()
+        await gather(*self._tasks, return_exceptions=True)
+        self._tasks.clear()
 
     @staticmethod
     async def deployment_to_dict(deployment: V1Deployment):
