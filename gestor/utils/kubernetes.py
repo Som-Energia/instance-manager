@@ -74,7 +74,7 @@ async def _render_kubernetes_file(directory_path: str, data=None) -> str:
     return output_file_path
 
 
-async def new_deployment(name: str, data: dict = {}) -> None:
+async def start_deployment(name: str, data: dict = None) -> None:
     """Starts a new deployment in the Kubernetes cluster"""
     _logger.info("Deploying %s", name)
     tmp_dir_path = await _create_working_directory(name)

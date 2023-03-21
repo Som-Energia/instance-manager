@@ -36,7 +36,7 @@ class Instance(BaseModel):
             **self.git_info.dict(),
         }
         try:
-            await kubernetes.new_deployment(self.name, data)
+            await kubernetes.start_deployment(self.name, data)
         except Exception as e:
             _logger.error("Failed to start the instance:%s", str(e))
             return
