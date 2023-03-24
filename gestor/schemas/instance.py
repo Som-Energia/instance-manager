@@ -40,3 +40,11 @@ class Instance(BaseModel):
         except Exception as e:
             _logger.error("Failed to start the instance:%s", str(e))
             return
+
+    async def undeploy(self) -> None:
+        _logger.info("Removing instance (%s)", str(self.dict()))
+        try:
+            await kubernetes.remove_deployment(self.name)
+        except Exception as e:
+            _logger.error("Failed to remove the instance:%s", str(e))
+            return

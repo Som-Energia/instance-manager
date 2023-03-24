@@ -35,10 +35,13 @@ async def instance_from_pull_request(
     return {"message": "Added new instance from pull request task"}
 
 
-@router.post("/instances/", response_model=Instance)
-def add_instance(instance: Instance, db: Session = Depends(get_db)):
-    new_instance = InstanceModel.create_instance(db=db, instance=instance)
-    return new_instance
+@router.delete("/instances/{instance_name}")
+async def undeploy_instance(instance_name: str, db: Session = Depends(get_db)) -> None:
+    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Instance not found")
+    else:
+        await Instance.from_orm(instance).undeploy()
 
 
 @router.get("/instances/", response_model=list[Instance])

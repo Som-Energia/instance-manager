@@ -80,6 +80,14 @@ async def start_deployment(name: str, data: dict = None) -> None:
     await _kubectl(["apply", "-k", tmp_dir_path])
 
 
+async def remove_deployment(name: str) -> None:
+    """Removes a deployment in the Kubernetes cluster"""
+    _logger.info("Undeploying %s", name)
+    await _kubectl(["delete", "deployment", name + "-erpserver-deployment"])
+    await _kubectl(["delete", "ingress", name + "-erpserver"])
+    await _kubectl(["delete", "service", name + "-erpserver"])
+
+
 async def cluster_deployments() -> list[V1Deployment]:
     """Starts a new deployment in the Kubernetes cluster"""
     await config.load_kube_config()
