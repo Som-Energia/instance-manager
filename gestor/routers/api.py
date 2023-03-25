@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from gestor.manager import manager
@@ -26,12 +26,14 @@ async def root():
 
 @router.post("/instances/deploy/pr")
 async def instance_from_pull_request(
-    repository: str, pull_request: int, background_tasks: BackgroundTasks
+    repository: str, pull_request: int
 ) -> dict[str, str]:
     """Deploys a new instance from a pull request"""
-    background_tasks.add_task(
-        manager.start_instance_from_pull_request, repository, pull_request
-    )
+    try:
+        await manager.start_instance_from_pull_request(repository, pull_request)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     return {"message": "Added new instance from pull request task"}
 
 
