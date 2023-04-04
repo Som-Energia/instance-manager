@@ -1,8 +1,6 @@
 import logging
 from asyncio import create_task, Queue, gather
 
-from kubernetes.client import V1Deployment
-
 from gestor.models.git import GitInfoModel
 from gestor.models.instance import InstanceModel
 from gestor.schemas.instance import Instance
@@ -43,7 +41,7 @@ class Manager:
     async def init_db_from_cluster(self):
         deployments = await kubernetes.cluster_deployments()
         for deployment in deployments:
-            instance = Instance.parse_obj(await self.deployment_to_dict(deployment))
+            instance = Instance.parse_obj(await Instance.deployment_to_dict(deployment))
             InstanceModel.create_instance(self._db, instance)
             InstanceModel.create_instance(self._db, instance)
 
@@ -57,7 +55,7 @@ class Manager:
             event_type = event["type"]
             deployment = event["object"]
             _logger.debug("Event %s %s", event_type, deployment.metadata.name)
-            instance = Instance.parse_obj(await self.deployment_to_dict(deployment))
+            instance = Instance.parse_obj(await Instance.deployment_to_dict(deployment))
             try:
                 if event_type == "ADDED":
                     InstanceModel.create_instance(self._db, instance)
@@ -77,18 +75,6 @@ class Manager:
             task.cancel()
         await gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
-
-    @staticmethod
-    async def deployment_to_dict(deployment: V1Deployment):
-        annotations = {
-            key.replace("gestor/", ""): value
-            for key, value in deployment.metadata.annotations.items()
-        }
-        labels = {
-            key.replace("gestor/", ""): value
-            for key, value in deployment.metadata.labels.items()
-        }
-        return {"git_info": annotations, **labels}
 
 
 manager = Manager()

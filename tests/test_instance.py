@@ -2,6 +2,7 @@ import re
 from unittest.mock import MagicMock
 
 import pytest
+from kubernetes.client import V1Deployment, V1ObjectMeta
 
 from config import settings
 from gestor.schemas.git import GitInfo
@@ -17,6 +18,21 @@ test_git_info = GitInfo(
 
 test_instance = Instance(
     git_info=test_git_info,
+)
+
+test_deployment = V1Deployment(
+    api_version="apps/v1",
+    kind="Deployment",
+    metadata=V1ObjectMeta(
+        name="test-deployment",
+        labels={"gestor/name": test_instance.name},
+        annotations={
+            "gestor/branch": test_instance.git_info.branch,
+            "gestor/commit": test_instance.git_info.commit,
+            "gestor/pull_request": test_instance.git_info.pull_request,
+            "gestor/repository": test_instance.git_info.repository,
+        },
+    ),
 )
 
 
@@ -39,3 +55,10 @@ async def test_start_instance_kubernetes_exception(mocker):
     mocker.patch("gestor.schemas.instance._logger.error", magic_method)
     await test_instance.deploy()
     magic_method.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_instance_from_deployment():
+    instance_dict = await Instance.deployment_to_dict(test_deployment)
+    instance = Instance.parse_obj(instance_dict)
+    assert instance == test_instance

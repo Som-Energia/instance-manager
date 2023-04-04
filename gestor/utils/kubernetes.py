@@ -3,8 +3,9 @@ import logging
 import os
 import shutil
 import subprocess
+from typing import cast
 
-from kubernetes.client import V1Deployment
+from kubernetes.client import V1Deployment, V1Pod
 from kubernetes_asyncio import config, watch, client
 from kubernetes_asyncio.client.api_client import ApiClient
 from mako.template import Template
@@ -31,9 +32,13 @@ async def _kubectl(args: list[str]) -> int:
 
 async def _create_working_directory(name: str) -> str:
     if not os.path.exists(settings.TEMP_DIRECTORY_PATH):
-        raise TemporaryDirectoryNotFound(
-            "Temporary directory path does not exist:%s" % settings.TEMP_DIRECTORY_PATH
-        )
+        try:
+            os.mkdir(settings.TEMP_DIRECTORY_PATH)
+        except Exception:
+            raise TemporaryDirectoryNotFound(
+                "Temporary directory path does not exist:%s"
+                % settings.TEMP_DIRECTORY_PATH
+            )
 
     working_directory_path = os.path.join(settings.TEMP_DIRECTORY_PATH, name)
     os.mkdir(working_directory_path)
@@ -88,9 +93,37 @@ async def remove_deployment(name: str) -> None:
     await _kubectl(["delete", "service", name + "-erpserver"])
 
 
+async def pod_logs(name: str) -> str:
+    async with ApiClient() as api:
+        v1 = client.CoreV1Api(api)
+        pods = await v1.list_namespaced_pod(
+            namespace="default", label_selector="gestor/name={}".format(name)
+        )
+        if pods.items:
+            return cast(
+                str,
+                await v1.read_namespaced_pod_log(
+                    name=pods.items[0].metadata.name,
+                    namespace="default",
+                    container="erpserver",
+                    tail_lines=None,
+                    follow=False,
+                ),
+            )
+        else:
+            raise Exception("Pod not found in the cluster")
+
+
 async def cluster_deployments() -> list[V1Deployment]:
     """Starts a new deployment in the Kubernetes cluster"""
-    await config.load_kube_config()
+    async with ApiClient() as api:
+        v1 = client.AppsV1Api(api)
+        deployments = await v1.list_namespaced_deployment(namespace="default")
+        return deployments.items
+
+
+async def cluster_pods() -> list[V1Pod]:
+    """Starts a new deployment in the Kubernetes cluster"""
     async with ApiClient() as api:
         v1 = client.AppsV1Api(api)
         deployments = await v1.list_namespaced_deployment(namespace="default")

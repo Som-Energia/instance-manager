@@ -58,3 +58,11 @@ def read_instance(instance_name: str, db: Session = Depends(get_db)):
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     return instance
+
+
+@router.get("/instances/{instance_name}/logs", response_model=str)
+async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) -> str:
+    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    if instance is None:
+        raise HTTPException(status_code=404, detail="Instance not found")
+    return await Instance.from_orm(instance).logs()

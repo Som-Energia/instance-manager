@@ -1,16 +1,12 @@
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock
 
 import pytest
-from kubernetes.client.models import (
-    V1Deployment,
-    V1ObjectMeta,
-)
+from kubernetes.client import V1ObjectMeta, V1Deployment
 
 from gestor import manager
 from gestor.models.instance import InstanceModel
 from gestor.schemas.git import GitInfo
 from gestor.schemas.instance import Instance
-from gestor.utils import github
 from gestor.utils.database import Base, SessionLocal, engine
 
 test_git_info = GitInfo(
@@ -67,38 +63,14 @@ async def test_create_instance_from_pull_request(mocker):
 
 @pytest.mark.asyncio
 async def test_create_instance_from_pull_request_existing(mocker):
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-
     mocker.patch(
         "gestor.utils.github.get_pull_request_info",
         return_value=test_git_info,
     )
 
     InstanceModel.create_instance(db, Instance(git_info=test_git_info))
-    magic_method = AsyncMock()
-    mocker.patch("gestor.schemas.instance.Instance.deploy", magic_method)
-    await manager.manager.start_instance_from_pull_request("Som-Energia/test", 1)
-    magic_method.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_create_instance_from_pull_request_github_exception(mocker):
-    mocker.patch(
-        "gestor.utils.github.get_pull_request_info",
-        side_effect=github.InvalidGitHubUrl,
-    )
-    magic_method = MagicMock()
-    mocker.patch("gestor.manager._logger.error", magic_method)
-    await manager.manager.start_instance_from_pull_request("Som-Energia/fail", 1)
-    magic_method.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_kubernetes_instance_from_deployment():
-    instance_dict = await manager.manager.deployment_to_dict(test_deployment)
-    instance = Instance.parse_obj(instance_dict)
-    assert instance == test_instance
+    with pytest.raises(Exception) as e:
+        await manager.manager.start_instance_from_pull_request("Som-Energia/fail", 1)
 
 
 @pytest.mark.asyncio

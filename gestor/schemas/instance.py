@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 import shortuuid
+from kubernetes.client import V1Deployment
 from pydantic import BaseModel, Field, validator
 
 from config import settings
@@ -39,7 +40,6 @@ class Instance(BaseModel):
             await kubernetes.start_deployment(self.name, data)
         except Exception as e:
             _logger.error("Failed to start the instance:%s", str(e))
-            return
 
     async def undeploy(self) -> None:
         _logger.info("Removing instance (%s)", str(self.dict()))
@@ -47,4 +47,22 @@ class Instance(BaseModel):
             await kubernetes.remove_deployment(self.name)
         except Exception as e:
             _logger.error("Failed to remove the instance:%s", str(e))
-            return
+
+    async def logs(self) -> str:
+        try:
+            return await kubernetes.pod_logs(self.name)
+        except Exception as e:
+            _logger.error("Failed to get instance logs:%s", str(e))
+            return "Failed"
+
+    @staticmethod
+    async def deployment_to_dict(deployment: V1Deployment):
+        annotations = {
+            key.replace("gestor/", ""): value
+            for key, value in deployment.metadata.annotations.items()
+        }
+        labels = {
+            key.replace("gestor/", ""): value
+            for key, value in deployment.metadata.labels.items()
+        }
+        return {"git_info": annotations, **labels}
