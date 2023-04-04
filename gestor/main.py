@@ -1,8 +1,9 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import settings
 from gestor import manager
 from gestor.routers import api, webhooks
 
@@ -23,6 +24,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def authenticate(token: str = Header(...)):
+    if token != settings.API_TOKEN:
+        raise HTTPException(status_code=401, detail="Invalid API token")
+
+
+@app.middleware("http")
+async def auth_middleware(request, call_next):
+    authenticate(request.headers.get("Authorization"))
+    response = await call_next(request)
+    return response
 
 
 @app.get("/")
