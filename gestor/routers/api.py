@@ -82,7 +82,6 @@ async def ssh_connection(
     instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
     if instance is None:
         return
-    print(instance)
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -107,7 +106,6 @@ async def ssh_connection(
     while True:
         try:
             message = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
-            print(message)
             if '"type":"resize"' in message:
                 sizes = json.loads(message)
                 chan.resize_pty(width=int(sizes["cols"]), height=int(sizes["rows"]))

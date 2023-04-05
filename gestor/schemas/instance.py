@@ -72,5 +72,4 @@ class Instance(BaseModel):
             key.replace("gestor/", ""): value
             for key, value in deployment.metadata.labels.items()
         }
-        print({"git_info": annotations, **labels})
         return {"git_info": annotations, **labels, **annotations}
