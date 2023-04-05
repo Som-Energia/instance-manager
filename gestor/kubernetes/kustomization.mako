@@ -16,6 +16,8 @@ commonAnnotations:
   gestor/branch: "${branch}"
   gestor/repository: "${repository}"
   gestor/pull_request: "${pull_request}"
+  gestor/server_port: "${server_port}"
+  gestor/ssh_port: "${ssh_port}"
 % for key, value in labels.items():
   gestor/${key}: "${value}"
 % endfor
@@ -29,3 +31,15 @@ configMapGenerator:
       - COMMIT=${commit}
       - BRANCH=${branch}
       - GITHUB_TOKEN=secret
+
+patches:
+  - target:
+      kind: Service
+      name: erpserver
+    patch: |-
+      - op: replace
+        path: /spec/ports/0/nodePort
+        value: ${server_port}
+      - op: replace
+        path: /spec/ports/1/nodePort
+        value: ${ssh_port}

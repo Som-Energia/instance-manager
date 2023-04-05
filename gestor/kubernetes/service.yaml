@@ -10,6 +10,8 @@ spec:
     - name: erpserver
       port: 8069
       targetPort: 8069
+      nodePort: 0
     - name: ssh
       port: 22
       targetPort: 22
+      nodePort: 0
