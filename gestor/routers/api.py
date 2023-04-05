@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+import asyncio
+
+import paramiko
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from gestor.manager import manager
@@ -9,6 +12,8 @@ from gestor.utils.database import Base, SessionLocal, engine
 Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
+
+key = paramiko.RSAKey.from_private_key_file("gestor-key")
 
 
 def get_db():
@@ -66,3 +71,33 @@ async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) 
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     return await Instance.from_orm(instance).logs()
+
+
+@router.websocket("/ssh")
+async def ssh(websocket: WebSocket):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname="192.168.49.2", username="root", pkey=key, port=32152)
+    chan = ssh.invoke_shell(term="vt100", width=200, height=50)
+    await websocket.accept()
+
+    async def read_chan():
+        while not chan.exit_status_ready():
+            if chan.recv_ready():
+                data = chan.recv(1024).decode("utf-8")
+                await websocket.send_text(data)
+            await asyncio.sleep(0.05)
+
+    read_task = asyncio.create_task(read_chan())
+
+    try:
+        while True:
+            try:
+                message = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
+                chan.send(message.encode("utf-8"))
+            except asyncio.TimeoutError:
+                pass
+
+    except WebSocketDisconnect:
+        ssh.close()
+        read_task.cancel()
