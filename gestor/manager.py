@@ -1,6 +1,7 @@
 import logging
 from asyncio import create_task, Queue, gather
 
+from config import settings
 from gestor.models.git import GitInfoModel
 from gestor.models.instance import InstanceModel
 from gestor.schemas.instance import Instance
@@ -19,6 +20,8 @@ class Manager:
     async def start_instance_from_pull_request(
         self, repository: str, pull_request: int
     ) -> None:
+        if repository not in settings.ALLOWED_REPOSITORIES:
+            raise Exception("This repository is not allowed")
         try:
             git_info = await github.get_pull_request_info(repository, pull_request)
         except github.InvalidGitHubUrl as e:
