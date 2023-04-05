@@ -1,9 +1,11 @@
 import asyncio
+import json
 
 import paramiko
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
+from config import settings
 from gestor.manager import manager
 from gestor.models.instance import InstanceModel
 from gestor.schemas.instance import Instance
@@ -13,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
 
-key = paramiko.RSAKey.from_private_key_file("gestor-key")
+key = paramiko.RSAKey.from_private_key_file(settings.SSH_KEY_PATH)
 
 
 def get_db():
@@ -73,12 +75,19 @@ async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) 
     return await Instance.from_orm(instance).logs()
 
 
-@router.websocket("/ssh")
-async def ssh(websocket: WebSocket):
+@router.websocket("/instances/{instance_name}/ssh")
+async def ssh_connection(
+    websocket: WebSocket, instance_name: str, db: Session = Depends(get_db)
+):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(hostname="192.168.49.2", username="root", pkey=key, port=32152)
-    chan = ssh.invoke_shell(term="vt100", width=200, height=50)
+    ssh.connect(
+        hostname=settings.SSH_IP,
+        username=settings.SSH_USER,
+        pkey=key,
+        port=32152,
+    )
+    chan = ssh.invoke_shell(term="xterm")
     await websocket.accept()
 
     async def read_chan():
@@ -90,14 +99,18 @@ async def ssh(websocket: WebSocket):
 
     read_task = asyncio.create_task(read_chan())
 
-    try:
-        while True:
-            try:
-                message = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
+    while True:
+        try:
+            message = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
+            print(message)
+            if '"type":"resize"' in message:
+                sizes = json.loads(message)
+                chan.resize_pty(width=int(sizes["cols"]), height=int(sizes["rows"]))
+            else:
                 chan.send(message.encode("utf-8"))
-            except asyncio.TimeoutError:
-                pass
-
-    except WebSocketDisconnect:
-        ssh.close()
-        read_task.cancel()
+        except WebSocketDisconnect:
+            ssh.close()
+            read_task.cancel()
+            break
+        except Exception:
+            continue
