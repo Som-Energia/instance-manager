@@ -79,13 +79,18 @@ async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) 
 async def ssh_connection(
     websocket: WebSocket, instance_name: str, db: Session = Depends(get_db)
 ):
+    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    if instance is None:
+        return
+    print(instance)
+
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(
         hostname=settings.SSH_IP,
         username=settings.SSH_USER,
         pkey=key,
-        port=32152,
+        port=instance.ssh_port,
     )
     chan = ssh.invoke_shell(term="xterm")
     await websocket.accept()

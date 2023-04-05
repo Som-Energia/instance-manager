@@ -12,6 +12,8 @@ class InstanceModel(Base):
         "id", autoincrement=True, nullable=False, unique=True, primary_key=True
     )
     name: Mapped[str] = mapped_column("name", nullable=False)
+    server_port: Mapped[int] = mapped_column("server_port", nullable=False)
+    ssh_port: Mapped[int] = mapped_column("ssh_port", nullable=False)
     git_info: Mapped["GitInfoModel"] = relationship(
         back_populates="instance", cascade="all, delete-orphan"
     )
@@ -21,7 +23,11 @@ class InstanceModel(Base):
         if cls.get_instance(db, instance.name):
             return
 
-        new_instance = cls(name=instance.name)
+        new_instance = cls(
+            name=instance.name,
+            server_port=instance.server_port,
+            ssh_port=instance.ssh_port,
+        )
         db.add(new_instance)
         db.commit()
         db.refresh(new_instance)
@@ -42,3 +48,7 @@ class InstanceModel(Base):
     @classmethod
     def get_instance(cls, db: Session, instance_name: str):
         return db.query(cls).filter(cls.name == instance_name).first()
+
+    @classmethod
+    def get_ports(cls, db: Session):
+        return db.query(cls.server_port, cls.ssh_port).all()

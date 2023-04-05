@@ -1,9 +1,9 @@
 import logging
-from typing import Optional
+import random
 
 import shortuuid
 from kubernetes.client import V1Deployment
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 from config import settings
 from gestor.schemas.git import GitInfo
@@ -16,14 +16,19 @@ def instance_name():
     return "g" + shortuuid.uuid()[0:11].lower()
 
 
+def server_port():
+    return random.randint(30000, 32767)
+
+
+def ssh_port():
+    return random.randint(30000, 32767)
+
+
 class Instance(BaseModel):
     name: str = Field(default_factory=instance_name)
     git_info: GitInfo
-    connection: Optional[str]
-
-    @validator("connection", pre=True, always=True)
-    def make_connection(cls, _, values: dict):
-        return values["name"] + "." + settings.DEPLOY_DOMAIN
+    server_port: str = Field(default_factory=server_port)
+    ssh_port: str = Field(default_factory=ssh_port)
 
     class Config:
         orm_mode = True
@@ -32,6 +37,8 @@ class Instance(BaseModel):
         _logger.info("Starting instance (%s)", str(self.dict()))
         data = {
             "name": self.name,
+            "server_port": self.server_port,
+            "ssh_port": self.ssh_port,
             "domain": settings.DEPLOY_DOMAIN,
             "labels": {},
             **self.git_info.dict(),
@@ -65,4 +72,5 @@ class Instance(BaseModel):
             key.replace("gestor/", ""): value
             for key, value in deployment.metadata.labels.items()
         }
-        return {"git_info": annotations, **labels}
+        print({"git_info": annotations, **labels})
+        return {"git_info": annotations, **labels, **annotations}
