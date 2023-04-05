@@ -1,7 +1,6 @@
 resources:
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
 
 # Set prefix to all resource names
 # Also to the ones in Ingress rules
@@ -30,13 +29,3 @@ configMapGenerator:
       - COMMIT=${commit}
       - BRANCH=${branch}
       - GITHUB_TOKEN=secret
-
-patches:
-  - target:
-      kind: Ingress
-      name: erpserver
-    # TODO: Value should be set dynamically
-    patch: |-
-      - op: replace
-        path: /spec/rules/0/host
-        value: ${name}.${domain}

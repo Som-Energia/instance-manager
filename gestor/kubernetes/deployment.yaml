@@ -22,6 +22,8 @@ spec:
           ports:
             - name: erpserver
               containerPort: 8069
+            - name: ssh
+              containerPort: 22
           resources:
             limits:
               cpu: 800m
