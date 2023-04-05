@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SSH_IP: str
     SSH_USER: str
     SSH_KEY_PATH: str
+    ALLOWED_REPOSITORIES: list[str]
 
     class Config:
         env_file_encoding = "utf-8"
