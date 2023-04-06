@@ -24,6 +24,11 @@ spec:
               containerPort: 8069
             - name: ssh
               containerPort: 22
+          readinessProbe:
+            tcpSocket:
+              port: 8069
+            initialDelaySeconds: 10
+            periodSeconds: 10
           resources:
             limits:
               cpu: 800m
