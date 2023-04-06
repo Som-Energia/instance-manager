@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from gestor.models.git import GitInfoModel
@@ -15,6 +18,7 @@ class InstanceModel(Base):
     server_port: Mapped[int] = mapped_column("server_port", nullable=False)
     ssh_port: Mapped[int] = mapped_column("ssh_port", nullable=False)
     is_ready: Mapped[bool] = mapped_column("is_ready", nullable=False)
+    created_at: Mapped[datetime] = mapped_column("created_at", DateTime, nullable=False)
     git_info: Mapped["GitInfoModel"] = relationship(
         back_populates="instance", cascade="all, delete-orphan"
     )
@@ -29,6 +33,7 @@ class InstanceModel(Base):
             server_port=instance.server_port,
             ssh_port=instance.ssh_port,
             is_ready=instance.is_ready,
+            created_at=instance.created_at,
         )
 
         db.add(new_instance)

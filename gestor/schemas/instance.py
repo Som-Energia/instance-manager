@@ -1,3 +1,4 @@
+import datetime
 import logging
 import random
 
@@ -30,6 +31,7 @@ class Instance(BaseModel):
     server_port: str = Field(default_factory=server_port)
     ssh_port: str = Field(default_factory=ssh_port)
     is_ready = False
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     class Config:
         orm_mode = True
