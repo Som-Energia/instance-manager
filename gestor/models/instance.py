@@ -14,6 +14,7 @@ class InstanceModel(Base):
     name: Mapped[str] = mapped_column("name", nullable=False)
     server_port: Mapped[int] = mapped_column("server_port", nullable=False)
     ssh_port: Mapped[int] = mapped_column("ssh_port", nullable=False)
+    is_ready: Mapped[bool] = mapped_column("is_ready", nullable=False)
     git_info: Mapped["GitInfoModel"] = relationship(
         back_populates="instance", cascade="all, delete-orphan"
     )
@@ -27,7 +28,9 @@ class InstanceModel(Base):
             name=instance.name,
             server_port=instance.server_port,
             ssh_port=instance.ssh_port,
+            is_ready=instance.is_ready,
         )
+
         db.add(new_instance)
         db.commit()
         db.refresh(new_instance)

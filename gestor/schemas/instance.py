@@ -29,6 +29,7 @@ class Instance(BaseModel):
     git_info: GitInfo
     server_port: str = Field(default_factory=server_port)
     ssh_port: str = Field(default_factory=ssh_port)
+    is_ready = False
 
     class Config:
         orm_mode = True
