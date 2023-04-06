@@ -82,29 +82,58 @@ async def start_deployment(name: str, data: dict = None) -> None:
     _logger.info("Deploying %s", name)
     tmp_dir_path = await _create_working_directory(name)
     await _render_kubernetes_file(tmp_dir_path, data)
-    await _kubectl(["apply", "-k", tmp_dir_path])
+    await _kubectl(
+        [
+            "apply",
+            "-k",
+            tmp_dir_path,
+            "--namespace=" + settings.KUBERNETES_NAMESPACE,
+        ]
+    )
 
 
 async def remove_deployment(name: str) -> None:
     """Removes a deployment in the Kubernetes cluster"""
     _logger.info("Undeploying %s", name)
-    await _kubectl(["delete", "deployment", name + "-erpserver-deployment"])
-    await _kubectl(["delete", "ingress", name + "-erpserver"])
-    await _kubectl(["delete", "service", name + "-erpserver"])
+    await _kubectl(
+        [
+            "delete",
+            "deployment",
+            name + "-erpserver-deployment",
+            "--namespace=" + settings.KUBERNETES_NAMESPACE,
+        ]
+    )
+    await _kubectl(
+        [
+            "delete",
+            "ingress",
+            name + "-erpserver",
+            "--namespace=" + settings.KUBERNETES_NAMESPACE,
+        ]
+    )
+    await _kubectl(
+        [
+            "delete",
+            "service",
+            name + "-erpserver",
+            "--namespace=" + settings.KUBERNETES_NAMESPACE,
+        ]
+    )
 
 
 async def pod_logs(name: str) -> str:
     async with ApiClient() as api:
         v1 = client.CoreV1Api(api)
         pods = await v1.list_namespaced_pod(
-            namespace="default", label_selector="gestor/name={}".format(name)
+            namespace=settings.KUBERNETES_NAMESPACE,
+            label_selector="gestor/name={}".format(name),
         )
         if pods.items:
             return cast(
                 str,
                 await v1.read_namespaced_pod_log(
                     name=pods.items[0].metadata.name,
-                    namespace="default",
+                    namespace=settings.KUBERNETES_NAMESPACE,
                     container="erpserver",
                     tail_lines=None,
                     follow=False,
@@ -118,7 +147,9 @@ async def cluster_deployments() -> list[V1Deployment]:
     """Starts a new deployment in the Kubernetes cluster"""
     async with ApiClient() as api:
         v1 = client.AppsV1Api(api)
-        deployments = await v1.list_namespaced_deployment(namespace="default")
+        deployments = await v1.list_namespaced_deployment(
+            namespace=settings.KUBERNETES_NAMESPACE
+        )
         return deployments.items
 
 
@@ -126,7 +157,9 @@ async def cluster_pods() -> list[V1Pod]:
     """Starts a new deployment in the Kubernetes cluster"""
     async with ApiClient() as api:
         v1 = client.AppsV1Api(api)
-        deployments = await v1.list_namespaced_deployment(namespace="default")
+        deployments = await v1.list_namespaced_deployment(
+            namespace=settings.KUBERNETES_NAMESPACE
+        )
         return deployments.items
 
 
@@ -136,7 +169,7 @@ async def watch_deployments(event_queue):
         v1 = client.AppsV1Api(api)
         deployment_watcher = watch.Watch()
         async with deployment_watcher.stream(
-            v1.list_namespaced_deployment, namespace="default"
+            v1.list_namespaced_deployment, namespace=settings.KUBERNETES_NAMESPACE
         ) as s:
             while True:
                 try:

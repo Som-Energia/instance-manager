@@ -3,6 +3,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     KUBERNETES_FILES_PATH: str
+    KUBERNETES_NAMESPACE: str
     TEMP_DIRECTORY_PATH: str
     DEPLOY_DOMAIN: str
     SSH_IP: str
