@@ -26,7 +26,7 @@ class Manager:
             git_info = await github.get_pull_request_info(repository, pull_request)
         except github.InvalidGitHubUrl as e:
             _logger.error("Error getting pull request information:%s" % str(e))
-            raise github.InvalidGitHubUrl(e)
+            raise Exception("Error getting pull request information")
 
         # Allow just one instance for a repository pull_request
         instance = GitInfoModel.get_git_info_instance(self._db, git_info)
