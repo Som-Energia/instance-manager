@@ -76,5 +76,8 @@ class Instance(BaseModel):
             key.replace("gestor/", ""): value
             for key, value in deployment.metadata.labels.items()
         }
-        is_ready = deployment.status.replicas == deployment.status.ready_replicas
+        is_ready = (
+            deployment.status.replicas == deployment.status.ready_replicas
+            and deployment.status.ready_replicas == 1
+        )
         return {"git_info": annotations, "is_ready": is_ready, **labels, **annotations}
