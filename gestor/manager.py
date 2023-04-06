@@ -64,6 +64,9 @@ class Manager:
                     InstanceModel.create_instance(self._db, instance)
                 elif event_type == "DELETED":
                     InstanceModel.delete_instance(self._db, instance)
+                elif event_type == "MODIFIED":
+                    InstanceModel.delete_instance(self._db, instance)
+                    InstanceModel.create_instance(self._db, instance)
             except Exception:
                 pass
 
