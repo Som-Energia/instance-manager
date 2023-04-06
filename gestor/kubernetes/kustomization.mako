@@ -18,6 +18,7 @@ commonAnnotations:
   gestor/pull_request: "${pull_request}"
   gestor/server_port: "${server_port}"
   gestor/ssh_port: "${ssh_port}"
+  gestor/created_at: "${created_at}"
 % for key, value in labels.items():
   gestor/${key}: "${value}"
 % endfor

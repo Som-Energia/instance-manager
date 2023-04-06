@@ -42,6 +42,7 @@ class Instance(BaseModel):
             "name": self.name,
             "server_port": self.server_port,
             "ssh_port": self.ssh_port,
+            "created_at": self.created_at,
             "domain": settings.DEPLOY_DOMAIN,
             "labels": {},
             **self.git_info.dict(),
