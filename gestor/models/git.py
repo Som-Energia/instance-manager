@@ -40,7 +40,7 @@ class GitInfoModel(Base):
             db.query(cls)
             .filter(
                 cls.repository == git_info.repository,
-                cls.pull_request == git_info.pull_request,
+                cls.branch == git_info.branch,
             )
             .first()
         )

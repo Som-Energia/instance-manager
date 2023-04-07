@@ -44,6 +44,19 @@ async def instance_from_pull_request(
     return {"message": "Added new instance from pull request task"}
 
 
+@router.post("/instances/deploy/branch")
+async def instance_from_branch(
+    repository: str, branch: str, module: str
+) -> dict[str, str]:
+    """Deploys a new instance from a branch"""
+    try:
+        await manager.start_instance_from_branch(repository, branch, module)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"message": "Added new instance from branch task"}
+
+
 @router.delete("/instances/{instance_name}")
 async def undeploy_instance(instance_name: str, db: Session = Depends(get_db)) -> None:
     instance = InstanceModel.get_instance(db=db, instance_name=instance_name)

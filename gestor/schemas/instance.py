@@ -36,7 +36,7 @@ class Instance(BaseModel):
     class Config:
         orm_mode = True
 
-    async def deploy(self) -> None:
+    async def deploy(self, target_module: str = None) -> None:
         _logger.info("Starting instance (%s)", str(self.dict()))
         data = {
             "name": self.name,
@@ -47,6 +47,8 @@ class Instance(BaseModel):
             "labels": {},
             **self.git_info.dict(),
         }
+        if target_module:
+            data["target_module"] = target_module
         try:
             await kubernetes.start_deployment(self.name, data)
         except Exception as e:
@@ -80,4 +82,7 @@ class Instance(BaseModel):
             deployment.status.replicas == deployment.status.ready_replicas
             and deployment.status.ready_replicas == 1
         )
+
+        if annotations["pull_request"] == "None":
+            annotations["pull_request"] = None
         return {"git_info": annotations, "is_ready": is_ready, **labels, **annotations}

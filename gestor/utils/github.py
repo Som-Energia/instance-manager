@@ -40,3 +40,23 @@ async def get_pull_request_info(repository: str, pull_request: int):
         commit=pull_request_info["head"]["sha"],
         branch=pull_request_info["head"]["ref"],
     )
+
+
+async def get_branch_info(repository: str, branch: str):
+    _logger.info(
+        "Getting branch information from GitHub API (%s/%s)",
+        repository,
+        branch,
+    )
+    path = f"/repos/{repository}/branches/{branch}"
+    try:
+        branch_info = await _github_request(path)
+    except InvalidGitHubUrl as e:
+        raise e
+
+    return GitInfo(
+        repository=repository,
+        pull_request=None,
+        commit=branch_info["commit"]["sha"],
+        branch=branch,
+    )

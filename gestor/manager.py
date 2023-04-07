@@ -17,6 +17,23 @@ class Manager:
         self._db = SessionLocal()
         self._tasks = []
 
+    async def start_instance(self, instance: Instance, module: str = None):
+        # Allow just one instance for a repository pull_request
+        existing_instance = GitInfoModel.get_git_info_instance(
+            self._db, instance.git_info
+        )
+
+        if existing_instance:
+            _logger.error(
+                "An instance for %s/%d already exists:%s",
+                instance.repository,
+                instance.branch,
+                instance.name,
+            )
+            raise Exception("An instance for this pull request already exists")
+
+        await instance.deploy(module)
+
     async def start_instance_from_pull_request(
         self, repository: str, pull_request: int
     ) -> None:
@@ -28,18 +45,23 @@ class Manager:
             _logger.error("Error getting pull request information:%s" % str(e))
             raise Exception("Error getting pull request information")
 
-        # Allow just one instance for a repository pull_request
-        instance = GitInfoModel.get_git_info_instance(self._db, git_info)
-        if instance:
-            _logger.error(
-                "An instance for %s/%d already exists:%s",
-                repository,
-                pull_request,
-                instance.name,
-            )
-            raise Exception("An instance for this pull request already exists")
         instance = Instance(git_info=git_info)
-        await instance.deploy()
+        await self.start_instance(instance)
+
+    async def start_instance_from_branch(
+        self, repository: str, branch: str, module: str
+    ) -> None:
+        # TODO: Set modules to be installed
+        if repository not in settings.ALLOWED_REPOSITORIES:
+            raise Exception("This repository is not allowed")
+        try:
+            git_info = await github.get_branch_info(repository, branch)
+        except github.InvalidGitHubUrl as e:
+            _logger.error("Error getting branch information:%s" % str(e))
+            raise Exception("Error getting branch information")
+
+        instance = Instance(git_info=git_info)
+        await self.start_instance(instance, module)
 
     async def init_db_from_cluster(self):
         deployments = await kubernetes.cluster_deployments()
