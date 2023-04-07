@@ -14,7 +14,7 @@ class GitInfoModel(Base):
 
     commit: Mapped[str] = mapped_column("commit", nullable=False)
     repository: Mapped[str] = mapped_column("repository", nullable=False)
-    pull_request: Mapped[int] = mapped_column("pull_request", nullable=False)
+    pull_request: Mapped[int] = mapped_column("pull_request", nullable=True)
     branch: Mapped[str] = mapped_column("branch", nullable=False)
 
     instance_id: Mapped[int] = mapped_column(ForeignKey("instances.id"))
