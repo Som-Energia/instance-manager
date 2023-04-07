@@ -32,6 +32,9 @@ configMapGenerator:
       - COMMIT=${commit}
       - BRANCH=${branch}
       - GITHUB_TOKEN=secret
+% if target_module:
+      - INSTALL_MODULE=${target_module}
+% endif
 
 patches:
   - target:
