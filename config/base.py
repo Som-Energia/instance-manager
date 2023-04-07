@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     SSH_USER: str
     SSH_KEY_PATH: str
     ALLOWED_REPOSITORIES: list[str]
+    LIMIT_INSTANCES: bool
 
     class Config:
         env_file_encoding = "utf-8"

@@ -23,14 +23,14 @@ class Manager:
             self._db, instance.git_info
         )
 
-        if existing_instance:
+        if existing_instance and settings.LIMIT_INSTANCES:
             _logger.error(
-                "An instance for %s/%d already exists:%s",
-                instance.repository,
-                instance.branch,
+                "An instance for %s/%s already exists:%s",
+                instance.git_info.repository,
+                instance.git_info.branch,
                 instance.name,
             )
-            raise Exception("An instance for this pull request already exists")
+            raise Exception("An instance for the associated branch already exists")
 
         await instance.deploy(module)
 
