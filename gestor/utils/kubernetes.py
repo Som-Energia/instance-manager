@@ -106,14 +106,6 @@ async def remove_deployment(name: str) -> None:
     await _kubectl(
         [
             "delete",
-            "ingress",
-            name + "-erpserver",
-            "--namespace=" + settings.KUBERNETES_NAMESPACE,
-        ]
-    )
-    await _kubectl(
-        [
-            "delete",
             "service",
             name + "-erpserver",
             "--namespace=" + settings.KUBERNETES_NAMESPACE,
