@@ -40,9 +40,7 @@ async def github_webhook(
     x_hub_signature_256: str | None = Header(None),
 ):
     body = await request.body()
-    if False and not _verify_signature(
-        body, settings.WEBHOOKS_SECRET, x_hub_signature_256
-    ):
+    if not _verify_signature(body, settings.WEBHOOKS_SECRET, x_hub_signature_256):
         return
     if x_github_event != "pull_request":
         return
