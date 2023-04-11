@@ -39,18 +39,26 @@ async def github_webhook(
     x_github_event: str = Header(...),
     x_hub_signature_256: str | None = Header(None),
 ):
+    if x_github_event != "pull_request":
+        return
+
+    # Process payload
+    payload = await request.json()
+    _logger.debug("Received %s pull_request webhook", payload["action"])
+
+    # Check GitHub signature
     body = await request.body()
     if not _verify_signature(body, settings.WEBHOOKS_SECRET, x_hub_signature_256):
         return
-    if x_github_event != "pull_request":
-        return
-    payload = await request.json()
+
+    # Get GitInfo from payload
     git_info = GitInfo(
         repository=payload["pull_request"]["head"]["repo"]["full_name"],
         pull_request=payload["pull_request"]["number"],
         commit=payload["pull_request"]["head"]["sha"],
         branch=payload["pull_request"]["head"]["ref"],
     )
+
     if payload["action"] in [
         "opened",
         "reopened",

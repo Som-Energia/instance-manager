@@ -15,7 +15,7 @@ class InvalidGitHubUrl(Exception):
 async def _github_request(path: str) -> Any:
     url = f"https://api.github.com{path}"
 
-    _logger.info("Fetching GitHub API (%s)", url)
+    _logger.debug("Fetching GitHub API (%s)", url)
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 404:
@@ -24,7 +24,7 @@ async def _github_request(path: str) -> Any:
 
 
 async def get_pull_request_info(repository: str, pull_request: int):
-    _logger.info(
+    _logger.debug(
         "Getting pull request information from GitHub API (%s/%d)",
         repository,
         pull_request,
@@ -43,7 +43,7 @@ async def get_pull_request_info(repository: str, pull_request: int):
 
 
 async def get_branch_info(repository: str, branch: str):
-    _logger.info(
+    _logger.debug(
         "Getting branch information from GitHub API (%s/%s)",
         repository,
         branch,

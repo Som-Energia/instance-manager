@@ -25,7 +25,7 @@ class TemplateRenderFailed(Exception):
 
 async def _kubectl(args: list[str]) -> int:
     """Executes a kubectl command"""
-    _logger.info("kubectl %s", " ".join(args))
+    _logger.debug("kubectl %s", " ".join(args))
     result = subprocess.run(["kubectl", *args])
     return result.returncode
 
@@ -45,7 +45,7 @@ async def _create_working_directory(name: str) -> str:
     shutil.copytree(
         settings.KUBERNETES_FILES_PATH, working_directory_path, dirs_exist_ok=True
     )
-    _logger.info("Copied Kubernetes files to %s", working_directory_path)
+    _logger.debug("Copied Kubernetes files to %s", working_directory_path)
 
     return working_directory_path
 
@@ -70,7 +70,7 @@ async def _render_kubernetes_file(directory_path: str, data=None) -> str:
     output_file_path = os.path.join(directory_path, "kustomization.yaml")
     with open(output_file_path, "w") as f:
         f.write(output)
-    _logger.info("Kustomization file render saved (%s)", output_file_path)
+    _logger.debug("Kustomization file render saved (%s)", output_file_path)
 
     return output_file_path
 
@@ -79,7 +79,7 @@ async def start_deployment(name: str, data: dict = None) -> None:
     """Starts a new deployment in the Kubernetes cluster"""
     if data is None:
         data = {}
-    _logger.info("Deploying %s", name)
+    _logger.debug("Deploying %s", name)
     tmp_dir_path = await _create_working_directory(name)
     await _render_kubernetes_file(tmp_dir_path, data)
     await _kubectl(
@@ -94,7 +94,7 @@ async def start_deployment(name: str, data: dict = None) -> None:
 
 async def remove_deployment(name: str) -> None:
     """Removes a deployment in the Kubernetes cluster"""
-    _logger.info("Undeploying %s", name)
+    _logger.debug("Undeploying %s", name)
     await _kubectl(
         [
             "delete",

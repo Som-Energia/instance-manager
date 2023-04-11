@@ -66,7 +66,7 @@ class Instance(BaseModel):
             return await kubernetes.pod_logs(self.name)
         except Exception as e:
             _logger.error("Failed to get instance logs:%s", str(e))
-            return "Failed"
+            return "Failed to get logs"
 
     @staticmethod
     async def deployment_to_dict(deployment: V1Deployment):

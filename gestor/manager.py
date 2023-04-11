@@ -20,14 +20,14 @@ class Manager:
 
     async def stop_instance_from_webhook(self, git_info: GitInfo) -> None:
         if git_info.repository not in settings.ALLOWED_REPOSITORIES:
-            _logger.error("This repository is not allowed")
+            _logger.debug("Repository %s is not allowed", git_info.repository)
             return
 
         existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
 
         if existing_instance:
-            _logger.warning(
-                "Stopping instance from %s PR%d:%s",
+            _logger.debug(
+                "Stopping instance %s PR%d:%s",
                 existing_instance.git_info.repository,
                 existing_instance.git_info.pull_request,
                 existing_instance.name,
@@ -35,15 +35,15 @@ class Manager:
             instance = Instance.from_orm(existing_instance)
             await instance.undeploy()
         else:
-            _logger.warning(
-                "Instance not found for %s PR%d",
+            _logger.debug(
+                "Instance not found %s PR%d",
                 git_info.repository,
                 git_info.pull_request,
             )
 
     async def start_instance_from_webhook(self, git_info: GitInfo) -> None:
         if git_info.repository not in settings.ALLOWED_REPOSITORIES:
-            _logger.error("This repository is not allowed")
+            _logger.debug("Repository %s is not allowed", git_info.repository)
             return
 
         existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
@@ -52,7 +52,7 @@ class Manager:
             return
 
         if existing_instance and settings.LIMIT_INSTANCES:
-            _logger.warning(
+            _logger.debug(
                 "An instance for %s/%s already exists, it will we replaced:%s",
                 existing_instance.git_info.repository,
                 existing_instance.git_info.branch,
@@ -65,13 +65,13 @@ class Manager:
         await instance.deploy()
 
     async def start_instance(self, instance: Instance, module: str = None):
-        # Allow just one instance for a repository pull_request
+        # Allow just one instance for a repository branch
         existing_instance = GitInfoModel.get_git_info_instance(
             self._db, instance.git_info
         )
 
         if existing_instance and settings.LIMIT_INSTANCES:
-            _logger.error(
+            _logger.debug(
                 "An instance for %s/%s already exists:%s",
                 instance.git_info.repository,
                 instance.git_info.branch,
@@ -89,7 +89,7 @@ class Manager:
         try:
             git_info = await github.get_pull_request_info(repository, pull_request)
         except github.InvalidGitHubUrl as e:
-            _logger.error("Error getting pull request information:%s" % str(e))
+            _logger.debug("Error getting pull request information:%s" % str(e))
             raise Exception("Error getting pull request information")
 
         instance = Instance(git_info=git_info)
@@ -98,13 +98,12 @@ class Manager:
     async def start_instance_from_branch(
         self, repository: str, branch: str, module: str
     ) -> None:
-        # TODO: Set modules to be installed
         if repository not in settings.ALLOWED_REPOSITORIES:
             raise Exception("This repository is not allowed")
         try:
             git_info = await github.get_branch_info(repository, branch)
         except github.InvalidGitHubUrl as e:
-            _logger.error("Error getting branch information:%s" % str(e))
+            _logger.debug("Error getting branch information:%s" % str(e))
             raise Exception("Error getting branch information")
 
         instance = Instance(git_info=git_info)
