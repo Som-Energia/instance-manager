@@ -26,7 +26,7 @@ class Manager:
 
         if existing_instance:
             _logger.warning(
-                "Stopping instance from %s PR%s:%s",
+                "Stopping instance from %s PR%d:%s",
                 existing_instance.git_info.repository,
                 existing_instance.git_info.pull_request,
                 existing_instance.name,
@@ -34,7 +34,7 @@ class Manager:
             await existing_instance.undeploy()
         else:
             _logger.warning(
-                "Instance not found for %s PR%s:%s",
+                "Instance not found for %s PR%d",
                 git_info.repository,
                 git_info.pull_request,
             )
