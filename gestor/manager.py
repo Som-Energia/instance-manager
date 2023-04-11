@@ -48,6 +48,9 @@ class Manager:
 
         existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
 
+        if existing_instance and existing_instance.git_info.commit != git_info.commit:
+            return
+
         if existing_instance and settings.LIMIT_INSTANCES:
             _logger.warning(
                 "An instance for %s/%s already exists, it will we replaced:%s",
