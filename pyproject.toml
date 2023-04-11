@@ -19,6 +19,7 @@ kubernetes-asyncio = ">=24.2.2,<24.3.0"
 httpx = "^0.23.3"
 paramiko = "^3.1.0"
 websockets = "^11.0"
+PyGithub = "^1.58.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.2.2,<7.3.0"
