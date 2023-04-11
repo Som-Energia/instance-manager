@@ -32,7 +32,8 @@ class Manager:
                 existing_instance.git_info.pull_request,
                 existing_instance.name,
             )
-            await existing_instance.undeploy()
+            instance = Instance.from_orm(existing_instance)
+            await instance.undeploy()
         else:
             _logger.warning(
                 "Instance not found for %s PR%d",
