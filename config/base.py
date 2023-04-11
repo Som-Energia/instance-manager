@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ALLOWED_REPOSITORIES: list[str]
     LIMIT_INSTANCES: bool
     WEBHOOKS_SECRET: str
+    GITHUB_TOKEN: str
 
     class Config:
         env_file_encoding = "utf-8"
