@@ -55,7 +55,8 @@ class Manager:
                 existing_instance.git_info.branch,
                 existing_instance.name,
             )
-            await existing_instance.undeploy()
+            instance = Instance.from_orm(existing_instance)
+            await instance.undeploy()
 
         instance = Instance(git_info=git_info)
         await instance.deploy()
