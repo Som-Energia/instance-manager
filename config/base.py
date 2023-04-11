@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SSH_KEY_PATH: str
     ALLOWED_REPOSITORIES: list[str]
     LIMIT_INSTANCES: bool
+    WEBHOOKS_SECRET: str
 
     class Config:
         env_file_encoding = "utf-8"
