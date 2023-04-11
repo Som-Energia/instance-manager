@@ -14,6 +14,9 @@ from config import settings
 
 _logger = logging.getLogger(__name__)
 
+# Do not show Kubernetes Asyncio debug messages, too much verbose
+logging.getLogger("kubernetes_asyncio.client.rest").setLevel(logging.INFO)
+
 
 class TemporaryDirectoryNotFound(Exception):
     pass
@@ -155,7 +158,7 @@ async def cluster_pods() -> list[V1Pod]:
         return deployments.items
 
 
-async def watch_deployments(event_queue):
+async def watch_deployments(event_queue) -> None:
     await config.load_kube_config()
     async with ApiClient() as api:
         v1 = client.AppsV1Api(api)
