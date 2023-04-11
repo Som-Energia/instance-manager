@@ -4,6 +4,7 @@ from asyncio import create_task, Queue, gather
 from config import settings
 from gestor.models.git import GitInfoModel
 from gestor.models.instance import InstanceModel
+from gestor.schemas.git import GitInfo
 from gestor.schemas.instance import Instance
 from gestor.utils import github
 from gestor.utils import kubernetes
@@ -16,6 +17,46 @@ class Manager:
     def __init__(self):
         self._db = SessionLocal()
         self._tasks = []
+
+    async def stop_instance_from_webhook(self, git_info: GitInfo) -> None:
+        if git_info.repository not in settings.ALLOWED_REPOSITORIES:
+            _logger.error("This repository is not allowed")
+
+        existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
+
+        if existing_instance:
+            _logger.warning(
+                "Stopping instance from %s PR%s:%s",
+                existing_instance.git_info.repository,
+                existing_instance.git_info.pull_request,
+                existing_instance.name,
+            )
+            await existing_instance.undeploy()
+        else:
+            _logger.warning(
+                "Instance not found for %s PR%s:%s",
+                existing_instance.git_info.repository,
+                existing_instance.git_info.pull_request,
+                existing_instance.name,
+            )
+
+    async def start_instance_from_webhook(self, git_info: GitInfo) -> None:
+        if git_info.repository not in settings.ALLOWED_REPOSITORIES:
+            _logger.error("This repository is not allowed")
+
+        existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
+
+        if existing_instance and settings.LIMIT_INSTANCES:
+            _logger.warning(
+                "An instance for %s/%s already exists, it will we replaced:%s",
+                existing_instance.git_info.repository,
+                existing_instance.git_info.branch,
+                existing_instance.name,
+            )
+            await existing_instance.undeploy()
+
+        instance = Instance(git_info=git_info)
+        await instance.deploy()
 
     async def start_instance(self, instance: Instance, module: str = None):
         # Allow just one instance for a repository pull_request
