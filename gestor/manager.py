@@ -9,6 +9,7 @@ from gestor.schemas.instance import Instance
 from gestor.utils import github
 from gestor.utils import kubernetes
 from gestor.utils.database import SessionLocal
+from gestor.utils.github import set_commit_status, GitHubStatusState
 
 _logger = logging.getLogger(__name__)
 
@@ -116,10 +117,6 @@ class Manager:
             InstanceModel.create_instance(self._db, instance)
             InstanceModel.create_instance(self._db, instance)
 
-    @staticmethod
-    async def watch_kubernetes_events(event_queue):
-        await kubernetes.watch_deployments(event_queue)
-
     async def process_kubernetes_events(self, event_queue):
         while True:
             event = await event_queue.get()
@@ -135,6 +132,7 @@ class Manager:
                 elif event_type == "MODIFIED":
                     InstanceModel.delete_instance(self._db, instance)
                     InstanceModel.create_instance(self._db, instance)
+                await self.update_commit_status(instance, event_type)
             except Exception:
                 pass
 
@@ -149,6 +147,41 @@ class Manager:
             task.cancel()
         await gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
+
+    @staticmethod
+    async def watch_kubernetes_events(event_queue):
+        await kubernetes.watch_deployments(event_queue)
+
+    @staticmethod
+    async def update_commit_status(instance: Instance, event: str) -> None:
+        if not instance.git_info.pull_request:
+            return
+        if event == "DELETED":
+            await set_commit_status(
+                instance.git_info.repository,
+                instance.git_info.commit,
+                "The instance no longer exists",
+                GitHubStatusState.failure,
+            )
+            return
+        if event not in ["ADDED", "MODIFIED"]:  # Invalid events
+            return
+        if event == "MODIFIED" and not instance.is_ready:  # Avoid unnecessary API calls
+            return
+        if instance.is_ready:
+            await set_commit_status(
+                instance.git_info.repository,
+                instance.git_info.commit,
+                "The instance is ready",
+                GitHubStatusState.success,
+            )
+        else:
+            await set_commit_status(
+                instance.git_info.repository,
+                instance.git_info.commit,
+                "The instance is initializing",
+                GitHubStatusState.pending,
+            )
 
 
 manager = Manager()
