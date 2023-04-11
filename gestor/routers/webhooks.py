@@ -52,7 +52,8 @@ async def github_webhook(
         branch=payload["pull_request"]["head"]["ref"],
     )
     if payload["action"] in [
-        "open",
+        "opened",
+        "reopened",
         "synchronize",
     ]:  # new pull request or new commits pushed
         background_tasks.add_task(manager.start_instance_from_webhook, git_info)
