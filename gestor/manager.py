@@ -21,6 +21,7 @@ class Manager:
     async def stop_instance_from_webhook(self, git_info: GitInfo) -> None:
         if git_info.repository not in settings.ALLOWED_REPOSITORIES:
             _logger.error("This repository is not allowed")
+            return
 
         existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
 
@@ -42,6 +43,7 @@ class Manager:
     async def start_instance_from_webhook(self, git_info: GitInfo) -> None:
         if git_info.repository not in settings.ALLOWED_REPOSITORIES:
             _logger.error("This repository is not allowed")
+            return
 
         existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
 
