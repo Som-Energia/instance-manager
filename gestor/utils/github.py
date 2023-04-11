@@ -1,11 +1,26 @@
 import logging
+from enum import Enum
 from typing import Any
 
 import aiohttp
+from github import Github
 
+from config import settings
 from gestor.schemas.git import GitInfo
 
 _logger = logging.getLogger(__name__)
+
+# Do not show PyGitHub debug messages, too much verbose
+logging.getLogger("github").setLevel(logging.INFO)
+
+g = Github(login_or_token=settings.GITHUB_TOKEN)
+
+
+class GitHubStatusState(str, Enum):
+    error = "error"
+    failure = "failure"
+    pending = "pending"
+    success = "success"
 
 
 class InvalidGitHubUrl(Exception):
@@ -60,3 +75,24 @@ async def get_branch_info(repository: str, branch: str):
         commit=branch_info["commit"]["sha"],
         branch=branch,
     )
+
+
+async def set_commit_status(
+    repository: str, commit: str, description: str, state: GitHubStatusState
+):
+    _logger.debug(
+        "Setting commit %s status (%s)",
+        commit,
+        repository,
+    )
+    try:
+        repo = g.get_repo(repository)
+        commit = repo.get_commit(commit)
+        commit.create_status(
+            state=state,
+            target_url="https://" + settings.DEPLOY_DOMAIN,
+            description=description,
+            context="instance-manager",
+        )
+    except Exception:
+        _logger.error("Failed to set commit %s status (%s)", commit, repository)
