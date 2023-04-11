@@ -35,9 +35,8 @@ class Manager:
         else:
             _logger.warning(
                 "Instance not found for %s PR%s:%s",
-                existing_instance.git_info.repository,
-                existing_instance.git_info.pull_request,
-                existing_instance.name,
+                git_info.repository,
+                git_info.pull_request,
             )
 
     async def start_instance_from_webhook(self, git_info: GitInfo) -> None:
