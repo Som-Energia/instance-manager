@@ -2,7 +2,6 @@ import logging
 from asyncio import create_task, Queue, gather
 
 from config import settings
-from gestor.models.git import GitInfoModel
 from gestor.models.instance import InstanceModel
 from gestor.schemas.git import GitInfo
 from gestor.schemas.instance import Instance
@@ -24,8 +23,11 @@ class Manager:
             _logger.debug("Repository %s is not allowed", git_info.repository)
             return
 
-        existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
-
+        existing_instance = InstanceModel.get_instance(
+            self._db,
+            repository=git_info.repository,
+            branch=git_info.branch,
+        )
         if existing_instance:
             _logger.debug(
                 "Stopping instance %s PR%d:%s",
@@ -47,7 +49,11 @@ class Manager:
             _logger.debug("Repository %s is not allowed", git_info.repository)
             return
 
-        existing_instance = GitInfoModel.get_git_info_instance(self._db, git_info)
+        existing_instance = InstanceModel.get_instance(
+            self._db,
+            repository=git_info.repository,
+            branch=git_info.branch,
+        )
 
         if existing_instance and existing_instance.git_info.commit == git_info.commit:
             return
@@ -67,8 +73,10 @@ class Manager:
 
     async def start_instance(self, instance: Instance, module: str = None):
         # Allow just one instance for a repository branch
-        existing_instance = GitInfoModel.get_git_info_instance(
-            self._db, instance.git_info
+        existing_instance = InstanceModel.get_instance(
+            self._db,
+            repository=instance.git_info.repository,
+            branch=instance.git_info.branch,
         )
 
         if existing_instance and settings.LIMIT_INSTANCES:

@@ -74,7 +74,7 @@ def read_instances(db: Session = Depends(get_db)):
 
 @router.get("/instances/{instance_name}", response_model=Instance)
 def read_instance(instance_name: str, db: Session = Depends(get_db)):
-    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    instance = InstanceModel.get_instance(db=db, name=instance_name)
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     return instance
@@ -82,7 +82,7 @@ def read_instance(instance_name: str, db: Session = Depends(get_db)):
 
 @router.get("/instances/{instance_name}/logs", response_model=str)
 async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) -> str:
-    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    instance = InstanceModel.get_instance(db=db, name=instance_name)
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     return await Instance.from_orm(instance).logs()
@@ -92,7 +92,7 @@ async def read_instance_logs(instance_name: str, db: Session = Depends(get_db)) 
 async def ssh_connection(
     websocket: WebSocket, instance_name: str, db: Session = Depends(get_db)
 ):
-    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    instance = InstanceModel.get_instance(db=db, name=instance_name)
     if instance is None:
         return
 

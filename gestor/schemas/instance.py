@@ -36,6 +36,22 @@ class Instance(BaseModel):
     class Config:
         orm_mode = True
 
+    @classmethod
+    def from_orm(cls, instance: any):
+        return cls(
+            name=instance.name,
+            server_port=instance.server_port,
+            ssh_port=instance.ssh_port,
+            is_ready=instance.is_ready,
+            created_at=instance.created_at,
+            git_info=GitInfo(
+                pull_request=instance.pull_request,
+                commit=instance.commit,
+                repository=instance.repository,
+                branch=instance.branch,
+            ),
+        )
+
     async def deploy(self, target_module: str = None) -> None:
         _logger.info("Starting instance (%s)", str(self.dict()))
         data = {
