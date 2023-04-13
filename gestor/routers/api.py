@@ -131,3 +131,8 @@ async def ssh_connection(
             break
         except Exception:
             continue
+
+
+@router.get("/allowed-repositories/")
+async def read_allowed_repositories() -> list[str]:
+    return settings.ALLOWED_REPOSITORIES
