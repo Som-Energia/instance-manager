@@ -103,6 +103,7 @@ async def ssh_connection(
         username=settings.SSH_USER,
         pkey=key,
         port=instance.ssh_port,
+        timeout=2,
     )
     chan = ssh.invoke_shell(term="xterm")
     await websocket.accept()
