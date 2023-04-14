@@ -59,7 +59,7 @@ async def instance_from_branch(
 
 @router.delete("/instances/{instance_name}")
 async def undeploy_instance(instance_name: str, db: Session = Depends(get_db)) -> None:
-    instance = InstanceModel.get_instance(db=db, instance_name=instance_name)
+    instance = InstanceModel.get_instance(db=db, name=instance_name)
     if instance is None:
         raise HTTPException(status_code=404, detail="Instance not found")
     else:
