@@ -14,11 +14,12 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: erpserver
     spec:
+      imagePullSecrets:
+        - name: regcred
       terminationGracePeriodSeconds: 10
       containers:
         - name: erpserver
-          image: erpserver
-          imagePullPolicy: Never # TODO: Get image from registry
+          image: somenergia/erpserver:latest
           ports:
             - name: erpserver
               containerPort: 8069
