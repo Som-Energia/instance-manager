@@ -21,7 +21,7 @@ class InstanceModel(Base):
     commit: Mapped[str] = mapped_column("commit", nullable=False)
     repository: Mapped[str] = mapped_column("repository", nullable=False)
     pull_request: Mapped[int] = mapped_column("pull_request", nullable=True)
-    branch: Mapped[str] = mapped_column("branch", nullable=False)
+    branch: Mapped[str] = mapped_column("branch", nullable=True)
 
     @classmethod
     def create_instance(cls, db: Session, instance: Instance):
@@ -73,6 +73,9 @@ class InstanceModel(Base):
         cls, db: Session, name: str = None, repository: str = None, branch: str = None
     ):
         instance_query = db.query(cls)
+
+        if not name and not branch:
+            return None
 
         if name:
             instance_query = instance_query.filter(cls.name == name)

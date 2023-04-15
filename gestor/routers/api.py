@@ -57,6 +57,19 @@ async def instance_from_branch(
     return {"message": "Added new instance from branch task"}
 
 
+@router.post("/instances/deploy/commit")
+async def instance_from_branch(
+    repository: str, commit: str, module: str
+) -> dict[str, str]:
+    """Deploys a new instance from a commit"""
+    try:
+        await manager.start_instance_from_commit(repository, commit, module)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"message": "Added new instance from commit task"}
+
+
 @router.delete("/instances/{instance_name}")
 async def undeploy_instance(instance_name: str, db: Session = Depends(get_db)) -> None:
     instance = InstanceModel.get_instance(db=db, name=instance_name)

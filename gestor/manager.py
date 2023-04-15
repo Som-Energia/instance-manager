@@ -8,7 +8,7 @@ from gestor.schemas.instance import Instance
 from gestor.utils import github
 from gestor.utils import kubernetes
 from gestor.utils.database import SessionLocal
-from gestor.utils.github import set_commit_status, GitHubStatusState
+from gestor.utils.github import set_commit_status, GitHubStatusState, commit_exists
 
 _logger = logging.getLogger(__name__)
 
@@ -114,6 +114,21 @@ class Manager:
         except github.InvalidGitHubUrl as e:
             _logger.debug("Error getting branch information:%s" % str(e))
             raise Exception("Error getting branch information")
+
+        instance = Instance(git_info=git_info)
+        await self.start_instance(instance, module)
+
+    async def start_instance_from_commit(
+        self, repository: str, commit: str, module: str
+    ) -> None:
+        if repository not in settings.ALLOWED_REPOSITORIES:
+            raise Exception("This repository is not allowed")
+        try:
+            await commit_exists(repository, commit)
+            git_info = GitInfo(repository=repository, commit=commit)
+        except github.InvalidGitHubUrl as e:
+            _logger.debug("Error getting commit information:%s" % str(e))
+            raise Exception("Error getting commit information")
 
         instance = Instance(git_info=git_info)
         await self.start_instance(instance, module)

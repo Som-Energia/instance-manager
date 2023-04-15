@@ -12,7 +12,7 @@ class GitInfo(GitInfoFilter):
     commit: str
     repository: str
     pull_request: Optional[int]
-    branch: str
+    branch: Optional[str]
 
     class Config:
         orm_mode = True

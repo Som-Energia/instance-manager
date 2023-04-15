@@ -101,4 +101,6 @@ class Instance(BaseModel):
 
         if annotations["pull_request"] == "None":
             annotations["pull_request"] = None
+        if annotations["branch"] == "None":
+            annotations["branch"] = None
         return {"git_info": annotations, "is_ready": is_ready, **labels, **annotations}

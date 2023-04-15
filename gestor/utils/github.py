@@ -33,7 +33,7 @@ async def _github_request(path: str) -> Any:
     _logger.debug("Fetching GitHub API (%s)", url)
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
-            if response.status == 404:
+            if response.status != 200:
                 raise InvalidGitHubUrl("GitHub URL not found (%s)" % url)
             return await response.json()
 
@@ -75,6 +75,19 @@ async def get_branch_info(repository: str, branch: str):
         commit=branch_info["commit"]["sha"],
         branch=branch,
     )
+
+
+async def commit_exists(repository: str, commit: str) -> None:
+    _logger.debug(
+        "Getting commit information from GitHub API (%s/%s)",
+        repository,
+        commit,
+    )
+    path = f"/repos/{repository}/commits/{commit}"
+    try:
+        await _github_request(path)
+    except InvalidGitHubUrl as e:
+        raise e
 
 
 async def set_commit_status(
