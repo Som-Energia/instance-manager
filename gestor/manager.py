@@ -181,6 +181,7 @@ class Manager:
             return
         if event == "DELETED":
             await set_commit_status(
+                instance.name,
                 instance.git_info.repository,
                 instance.git_info.commit,
                 "The instance no longer exists",
@@ -193,6 +194,7 @@ class Manager:
             return
         if instance.is_ready:
             await set_commit_status(
+                instance.name,
                 instance.git_info.repository,
                 instance.git_info.commit,
                 "The instance is ready",
@@ -200,6 +202,7 @@ class Manager:
             )
         else:
             await set_commit_status(
+                instance.name,
                 instance.git_info.repository,
                 instance.git_info.commit,
                 "The instance is initializing",

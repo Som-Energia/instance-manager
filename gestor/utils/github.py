@@ -91,7 +91,7 @@ async def commit_exists(repository: str, commit: str) -> None:
 
 
 async def set_commit_status(
-    repository: str, commit: str, description: str, state: GitHubStatusState
+    name: str, repository: str, commit: str, description: str, state: GitHubStatusState
 ):
     _logger.debug(
         "Setting commit %s status (%s)",
@@ -103,7 +103,7 @@ async def set_commit_status(
         commit = repo.get_commit(commit)
         commit.create_status(
             state=state,
-            target_url="https://" + settings.DEPLOY_DOMAIN,
+            target_url="https://" + settings.DEPLOY_DOMAIN + "?name=" + name,
             description=description,
             context="instance-manager",
         )
