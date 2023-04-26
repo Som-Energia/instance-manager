@@ -31,8 +31,8 @@ class Manager:
         if existing_instance:
             _logger.debug(
                 "Stopping instance %s PR%d:%s",
-                existing_instance.git_info.repository,
-                existing_instance.git_info.pull_request,
+                existing_instance.repository,
+                existing_instance.pull_request,
                 existing_instance.name,
             )
             instance = Instance.from_orm(existing_instance)
@@ -55,14 +55,14 @@ class Manager:
             branch=git_info.branch,
         )
 
-        if existing_instance and existing_instance.git_info.commit == git_info.commit:
+        if existing_instance and existing_instance.commit == git_info.commit:
             return
 
         if existing_instance and settings.LIMIT_INSTANCES:
             _logger.debug(
                 "An instance for %s/%s already exists, it will we replaced:%s",
-                existing_instance.git_info.repository,
-                existing_instance.git_info.branch,
+                existing_instance.repository,
+                existing_instance.branch,
                 existing_instance.name,
             )
             instance = Instance.from_orm(existing_instance)
@@ -82,9 +82,9 @@ class Manager:
         if existing_instance and settings.LIMIT_INSTANCES:
             _logger.debug(
                 "An instance for %s/%s already exists:%s",
-                instance.git_info.repository,
-                instance.git_info.branch,
-                instance.name,
+                existing_instance.repository,
+                existing_instance.branch,
+                existing_instance.name,
             )
             raise Exception("An instance for the associated branch already exists")
 
