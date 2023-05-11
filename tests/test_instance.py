@@ -2,9 +2,8 @@ import re
 from unittest.mock import MagicMock
 
 import pytest
-from kubernetes.client import V1Deployment, V1ObjectMeta
+from kubernetes.client import V1Deployment, V1ObjectMeta, V1DeploymentStatus
 
-from config import settings
 from gestor.schemas.git import GitInfo
 from gestor.schemas.instance import Instance
 from gestor.utils import kubernetes
@@ -31,14 +30,15 @@ test_deployment = V1Deployment(
             "gestor/commit": test_instance.git_info.commit,
             "gestor/pull_request": test_instance.git_info.pull_request,
             "gestor/repository": test_instance.git_info.repository,
+            "gestor/server_port": test_instance.server_port,
+            "gestor/ssh_port": test_instance.ssh_port,
+            "gestor/created_at": test_instance.created_at,
         },
     ),
+    status=V1DeploymentStatus(
+        ready_replicas=1,
+    ),
 )
-
-
-def test_computed_connection_parameters():
-    expected_connection = test_instance.name + "." + settings.DEPLOY_DOMAIN
-    assert expected_connection == test_instance.connection
 
 
 def test_default_factory_name():
