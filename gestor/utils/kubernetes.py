@@ -160,15 +160,18 @@ async def cluster_pods() -> list[V1Pod]:
 
 async def watch_deployments(event_queue) -> None:
     await config.load_kube_config()
-    async with ApiClient() as api:
-        v1 = client.AppsV1Api(api)
-        deployment_watcher = watch.Watch()
-        async with deployment_watcher.stream(
-            v1.list_namespaced_deployment, namespace=settings.KUBERNETES_NAMESPACE
-        ) as s:
-            while True:
-                try:
-                    event = await asyncio.wait_for(s.__anext__(), timeout=None)
-                    await event_queue.put(event)
-                except asyncio.TimeoutError:
-                    pass
+    while True:
+        _logger.debug("Opening connection to listen Deployment events")
+        async with ApiClient() as api:
+            v1 = client.AppsV1Api(api)
+            deployment_watcher = watch.Watch()
+            async with deployment_watcher.stream(
+                v1.list_namespaced_deployment, namespace=settings.KUBERNETES_NAMESPACE
+            ) as s:
+                while True:
+                    try:
+                        event = await asyncio.wait_for(s.__anext__(), timeout=None)
+                        await event_queue.put(event)
+                    except asyncio.TimeoutError:
+                        pass
+        _logger.debug("Closing connection to listen Deployment events")
