@@ -28,8 +28,8 @@ def ssh_port():
 class Instance(BaseModel):
     name: str = Field(default_factory=instance_name)
     git_info: GitInfo
-    server_port: str = Field(default_factory=server_port)
-    ssh_port: str = Field(default_factory=ssh_port)
+    server_port: int = Field(default_factory=server_port)
+    ssh_port: int = Field(default_factory=ssh_port)
     is_ready = False
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 

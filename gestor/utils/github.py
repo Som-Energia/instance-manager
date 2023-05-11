@@ -77,7 +77,7 @@ async def get_branch_info(repository: str, branch: str):
     )
 
 
-async def commit_exists(repository: str, commit: str) -> None:
+async def commit_exists(repository: str, commit: str):
     _logger.debug(
         "Getting commit information from GitHub API (%s/%s)",
         repository,
