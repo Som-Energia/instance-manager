@@ -173,7 +173,11 @@ class Manager:
 
     @staticmethod
     async def watch_kubernetes_events(event_queue):
-        await kubernetes.watch_deployments(event_queue)
+        while True:
+            try:
+                await kubernetes.watch_deployments(event_queue)
+            except Exception as e:
+                _logger.debug("Error watching K8s Deployments:%s" % str(e))
 
     @staticmethod
     async def update_commit_status(instance: Instance, event: str) -> None:
